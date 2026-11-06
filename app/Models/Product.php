@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\StockStatus;
 use Database\Factories\ProductFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,6 +39,25 @@ class Product extends Model
             'price' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function stockStatus(): StockStatus
+    {
+        return StockStatus::fromStock($this->stock);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeWithStockStatus(Builder $query, StockStatus $status): Builder
+    {
+        return match ($status) {
+            StockStatus::OutOfStock => $query->where('stock', '<=', 0),
+            StockStatus::LowStock => $query->whereBetween('stock', [1, StockStatus::LOW_STOCK_THRESHOLD - 1]),
+            StockStatus::InStock => $query->where('stock', '>=', StockStatus::LOW_STOCK_THRESHOLD),
+        };
     }
 
     public function category(): BelongsTo
