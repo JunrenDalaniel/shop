@@ -20,6 +20,17 @@ test('an order belongs to a user and has items for products', function () {
         ->and($product->category->products)->toHaveCount(1);
 });
 
+test('orders and products are linked through order items with pivot data', function () {
+    $product = Product::factory()->create();
+    $order = Order::factory()->create();
+    OrderItem::factory()->for($order)->for($product)->create(['quantity' => 3]);
+
+    expect($order->products->first()->is($product))->toBeTrue()
+        ->and($order->products->first()->pivot->quantity)->toBe(3)
+        ->and($product->orders->first()->is($order))->toBeTrue()
+        ->and($product->category->orderItems)->toHaveCount(1);
+});
+
 test('order status is cast to the OrderStatus enum', function () {
     $order = Order::factory()->create(['status' => OrderStatus::Paid]);
 
