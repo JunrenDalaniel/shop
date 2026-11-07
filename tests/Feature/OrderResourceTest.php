@@ -4,6 +4,7 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\CreateOrder;
 use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
+use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -78,4 +79,13 @@ test('editing an order recalculates its total', function () {
     expect($order->status)->toBe(OrderStatus::Delivered)
         ->and((float) $order->subtotal)->toBe(200.0)
         ->and((float) $order->total)->toBe(250.0);
+});
+
+test('an order view page shows its details and the comments thread', function () {
+    $order = Order::factory()->create();
+
+    Livewire::test(ViewOrder::class, ['record' => $order->id])
+        ->assertOk()
+        ->assertSee($order->order_number)
+        ->assertSee('Comments');
 });

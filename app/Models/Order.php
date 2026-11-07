@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Tilto\Commentable\Contracts\Commentable;
+use Tilto\Commentable\Traits\HasComments;
 
-class Order extends Model
+class Order extends Model implements Commentable
 {
     /** @use HasFactory<OrderFactory> */
-    use HasFactory;
+    use HasComments, HasFactory;
 
     protected $fillable = [
         'user_id',
