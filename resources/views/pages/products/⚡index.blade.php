@@ -273,7 +273,7 @@ new #[Title('Products')] class extends Component {
                         <flux:table.row :key="$product->id">
                             <flux:table.cell variant="strong">{{ $product->name }}</flux:table.cell>
                             <flux:table.cell class="max-w-xs truncate">{{ $product->description }}</flux:table.cell>
-                            <flux:table.cell>{{ $product->category->name }}</flux:table.cell>
+                            <flux:table.cell>{{ $product->category?->name ?? __('Uncategorized') }}</flux:table.cell>
                             <flux:table.cell align="end">₱{{ number_format($product->price, 2) }}</flux:table.cell>
                             <flux:table.cell align="end">{{ $product->stock }}</flux:table.cell>
                             <flux:table.cell>
@@ -301,7 +301,7 @@ new #[Title('Products')] class extends Component {
                     </div>
                     <flux:text>{{ $product->description }}</flux:text>
                     <div class="flex flex-wrap justify-between gap-2 text-sm">
-                        <flux:text>{{ $product->category->name }}</flux:text>
+                        <flux:text>{{ $product->category?->name ?? __('Uncategorized') }}</flux:text>
                         <span><strong>₱{{ number_format($product->price, 2) }}</strong> · {{ __(':count in stock', ['count' => $product->stock]) }}</span>
                     </div>
                     <div class="flex gap-2">
@@ -340,7 +340,7 @@ new #[Title('Products')] class extends Component {
                 <dl class="grid grid-cols-3 gap-4 rounded-xl border border-zinc-200 p-4 text-sm dark:border-zinc-700">
                     <div>
                         <dt class="text-xs uppercase tracking-wide text-zinc-500">{{ __('Category') }}</dt>
-                        <dd class="mt-1">{{ $this->selectedProduct->category->name }}</dd>
+                        <dd class="mt-1">{{ $this->selectedProduct->category?->name ?? __('Uncategorized') }}</dd>
                     </div>
                     <div>
                         <dt class="text-xs uppercase tracking-wide text-zinc-500">{{ __('Price') }}</dt>

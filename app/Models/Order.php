@@ -69,4 +69,17 @@ class Order extends Model
             ->withPivot(['product_name', 'quantity', 'price', 'line_total'])
             ->withTimestamps();
     }
+
+    /**
+     * Recalculate subtotal and total from the order's items.
+     */
+    public function recalculateTotals(): void
+    {
+        $subtotal = (float) $this->items()->sum('line_total');
+
+        $this->update([
+            'subtotal' => $subtotal,
+            'total' => $subtotal + (float) $this->shipping_fee + (float) $this->tax,
+        ]);
+    }
 }

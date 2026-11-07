@@ -177,7 +177,7 @@ new #[Layout('layouts::shop'), Title('Home')] class extends Component {
 
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] sm:gap-5">
                         @foreach ($this->featuredProducts as $product)
-                            <x-product-card wire:key="featured-{{ $product->id }}" :product="$product" :icon="$this->iconFor($product->category->slug)" :category-name="$product->category->name" />
+                            <x-product-card wire:key="featured-{{ $product->id }}" :product="$product" :icon="$this->iconFor($product->category?->slug ?? '')" :category-name="$product->category?->name" />
                         @endforeach
                     </div>
                 </div>
