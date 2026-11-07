@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Shipment;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -81,6 +82,8 @@ class DatabaseSeeder extends Seeder
                 $this->createOrder($customer, $products->random(fake()->numberBetween(1, 5)));
             }
         });
+
+        Shipment::factory(15)->recycle(Order::all())->create();
 
         Coupon::factory(20)->create();
 
