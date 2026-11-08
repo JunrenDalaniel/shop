@@ -2,6 +2,8 @@
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('guests can see categories and products on the homepage', function () {
@@ -55,4 +57,14 @@ test('sold out products cannot be added to the cart', function () {
         ->call('addToCart', $product->id)
         ->assertSet('cart', [])
         ->assertSee('Sold out');
+});
+
+test('products with an uploaded image show it on the homepage', function () {
+    Storage::fake('public');
+    $product = Product::factory()->create(['name' => 'Camera', 'stock' => 5]);
+    $media = $product->addMedia(UploadedFile::fake()->image('camera.jpg'))->toMediaCollection('products');
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee($media->getUrl('thumb'), false);
 });

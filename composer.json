@@ -10,6 +10,7 @@
         "bezhansalleh/filament-shield": "^4.3",
         "businesstilto/commentable": "^0.4.3",
         "filament/filament": "^5.11",
+        "filament/spatie-laravel-media-library-plugin": "~5.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",

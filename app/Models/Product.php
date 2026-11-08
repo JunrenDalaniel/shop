@@ -11,13 +11,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
+    use InteractsWithMedia;
     use SoftDeletes;
+
+    public const MEDIA_COLLECTION = 'products';
+
+    public const MAX_IMAGES = 5;
+
+    public const MAX_IMAGE_SIZE_KB = 512000;
+
+    /** @var list<string> */
+    public const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png'];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::MEDIA_COLLECTION)
+            ->acceptsMimeTypes(self::IMAGE_MIME_TYPES);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(368)
+            ->height(232)
+            ->nonQueued();
+    }
 
     protected $fillable = [
         'category_id',

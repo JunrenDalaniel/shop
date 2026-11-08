@@ -19,10 +19,14 @@
 @endphp
 
 <article class="flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white">
-    <div class="flex aspect-square flex-col items-center justify-center gap-2 bg-stone-100" aria-hidden="true">
-        <flux:icon :name="$icon" class="size-14 text-stone-400" />
-        <span class="text-xs text-stone-500">{{ __('Product image') }}</span>
-    </div>
+    @if ($imageUrl = $product->getFirstMediaUrl(\App\Models\Product::MEDIA_COLLECTION, 'thumb'))
+        <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy" class="aspect-square w-full bg-stone-100 object-cover">
+    @else
+        <div class="flex aspect-square flex-col items-center justify-center gap-2 bg-stone-100" aria-hidden="true">
+            <flux:icon :name="$icon" class="size-14 text-stone-400" />
+            <span class="text-xs text-stone-500">{{ __('Product image') }}</span>
+        </div>
+    @endif
 
     <div class="flex flex-1 flex-col gap-1.5 p-3.5 pb-4">
         @if ($categoryName)

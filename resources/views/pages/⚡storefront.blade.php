@@ -49,6 +49,7 @@ new #[Layout('layouts::shop'), Title('Home')] class extends Component {
             ->withCount(['products' => fn ($query) => $query->active()])
             ->with(['products' => fn ($query) => $query
                 ->active()
+                ->with('media')
                 ->when(trim($this->search) !== '', fn ($query) => $query->where('name', 'like', '%'.trim($this->search).'%'))
                 ->orderBy('name')])
             ->orderBy('name')
@@ -63,7 +64,7 @@ new #[Layout('layouts::shop'), Title('Home')] class extends Component {
     {
         return Product::query()
             ->active()
-            ->with('category')
+            ->with(['category', 'media'])
             ->where('stock', '>', 0)
             ->latest('id')
             ->limit(5)

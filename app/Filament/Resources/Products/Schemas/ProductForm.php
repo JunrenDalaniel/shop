@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Models\Product;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -34,6 +36,19 @@ class ProductForm
                     ->minValue(0)
                     ->default(0)
                     ->placeholder('Enter stock quantity'),
+
+                SpatieMediaLibraryFileUpload::make('images')
+                    ->label('Product Images')
+                    ->collection(Product::MEDIA_COLLECTION)
+                    ->disk('public')
+                    ->image()
+                    ->multiple()
+                    ->reorderable()
+                    ->maxFiles(Product::MAX_IMAGES)
+                    ->maxSize(Product::MAX_IMAGE_SIZE_KB)
+                    ->acceptedFileTypes(Product::IMAGE_MIME_TYPES)
+                    ->helperText('Up to 5 images (JPG, JPEG, PNG), max 500 MB each.')
+                    ->columnSpanFull(),
             ]);
     }
 }

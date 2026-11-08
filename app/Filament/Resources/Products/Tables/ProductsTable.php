@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -9,8 +10,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -28,8 +29,11 @@ class ProductsTable
 
             ->columns([
                 Stack::make([
-                    ImageColumn::make('image')
+                    SpatieMediaLibraryImageColumn::make('images')
                         ->label('Product Image')
+                        ->collection(Product::MEDIA_COLLECTION)
+                        ->conversion('thumb')
+                        ->limit(1)
                         ->height(180)
                         ->width('100%')
                         ->defaultImageUrl(url('/images/no-image.png')),
