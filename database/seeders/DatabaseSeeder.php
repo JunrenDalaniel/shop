@@ -77,9 +77,15 @@ class DatabaseSeeder extends Seeder
 
         $products = Product::all();
 
-        User::factory(3)->create()->each(function (User $customer) use ($products): void {
-            foreach (range(1, fake()->numberBetween(2, 4)) as $unused) {
-                $this->createOrder($customer, $products->random(fake()->numberBetween(1, 5)));
+        $welcomeCoupon = Coupon::factory()->create(['code' => 'WELCOME100', 'discount' => 100, 'expires_at' => now()->addYear()]);
+
+        User::factory(3)->create()->each(function (User $customer) use ($products, $welcomeCoupon): void {
+            foreach (range(1, fake()->numberBetween(2, 4)) as $index) {
+                $this->createOrder(
+                    $customer,
+                    $products->random(fake()->numberBetween(1, 5)),
+                    $index === 1 ? $welcomeCoupon : null,
+                );
             }
         });
 
@@ -93,7 +99,7 @@ class DatabaseSeeder extends Seeder
     /**
      * @param  Collection<int, Product>  $products
      */
-    private function createOrder(User $customer, $products): void
+    private function createOrder(User $customer, $products, ?Coupon $coupon = null): void
     {
         $placedAt = fake()->dateTimeBetween('-90 days', 'now');
 
@@ -127,9 +133,15 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $subtotal = number_format($totalInCents / 100, 2, '.', '');
+        $discount = $coupon?->discountFor($subtotal) ?? '0.00';
+
         $order->update([
-            'subtotal' => $totalInCents / 100,
-            'total' => $totalInCents / 100,
+            'coupon_id' => $coupon?->getKey(),
+            'coupon_code' => $coupon?->code,
+            'subtotal' => $subtotal,
+            'discount_amount' => $discount,
+            'total' => bcsub($subtotal, $discount, 2),
         ]);
     }
 }

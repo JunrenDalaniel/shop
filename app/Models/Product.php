@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StockStatus;
+use App\Exceptions\InsufficientStockException;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,6 +73,34 @@ class Product extends Model implements HasMedia
     public function stockStatus(): StockStatus
     {
         return StockStatus::fromStock($this->stock);
+    }
+
+    /**
+     * Atomically take $quantity from stock.
+     *
+     * @throws InsufficientStockException
+     */
+    public function decrementStock(int $quantity): void
+    {
+        $affected = static::withTrashed()
+            ->whereKey($this->getKey())
+            ->where('stock', '>=', $quantity)
+            ->decrement('stock', $quantity);
+
+        if ($affected === 0) {
+            $available = (int) static::withTrashed()->whereKey($this->getKey())->value('stock');
+
+            throw new InsufficientStockException($this->name, $quantity, $available);
+        }
+
+        $this->refresh();
+    }
+
+    public function incrementStock(int $quantity): void
+    {
+        static::withTrashed()->whereKey($this->getKey())->increment('stock', $quantity);
+
+        $this->refresh();
     }
 
     public function scopeActive(Builder $query): Builder
