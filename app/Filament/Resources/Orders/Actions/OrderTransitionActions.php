@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Orders\Actions;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\InsufficientStockException;
 use App\Models\Order;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 
 class OrderTransitionActions
@@ -35,8 +37,22 @@ class OrderTransitionActions
             ->modalDescription(fn (Order $record): string => "Move order {$record->order_number} from {$record->status->getLabel()} to {$target->getLabel()}?")
             ->visible(fn (Order $record): bool => $record->status->canMoveTo($target))
             ->action(function (Order $record) use ($target): void {
-                $record->moveTo($target);
-            })
-            ->successNotificationTitle("Order marked as {$target->getLabel()}");
+                try {
+                    $record->moveTo($target);
+                } catch (InsufficientStockException $exception) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Not enough stock')
+                        ->body("{$exception->productName}: {$exception->requested} requested, {$exception->available} available.")
+                        ->send();
+
+                    return;
+                }
+
+                Notification::make()
+                    ->success()
+                    ->title("Order marked as {$target->getLabel()}")
+                    ->send();
+            });
     }
 }

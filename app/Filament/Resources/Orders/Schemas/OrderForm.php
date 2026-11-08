@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 use App\Models\Product;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -34,6 +35,7 @@ class OrderForm
                 Repeater::make('items')
                     ->relationship('items')
                     ->columnSpanFull()
+                    ->disabled(fn (string $operation, ?Order $record): bool => $operation === 'edit' && $record?->status !== OrderStatus::Pending)
                     ->columns(3)
                     ->minItems(1)
                     ->addActionLabel('Add item')
