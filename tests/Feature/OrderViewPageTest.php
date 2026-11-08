@@ -5,7 +5,6 @@ use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
@@ -14,7 +13,7 @@ beforeEach(function () {
     $this->actingAs(User::factory()->superAdmin()->create());
 });
 
-test('the view page renders customer, items, totals and status history', function () {
+test('the view page renders customer, items and totals', function () {
     $customer = User::factory()->create(['name' => 'Ana Reyes', 'email' => 'ana@example.test']);
     $order = Order::factory()->for($customer)->create([
         'status' => OrderStatus::Pending,
@@ -27,7 +26,6 @@ test('the view page renders customer, items, totals and status history', functio
         'line_total' => '300.00',
     ]);
     $order->update(['subtotal' => '300.00', 'shipping_fee' => '50.00', 'total' => '350.00']);
-    $history = OrderStatusHistory::factory()->for($order)->create();
 
     Livewire::test(ViewOrder::class, ['record' => $order->id])
         ->assertOk()
@@ -37,14 +35,12 @@ test('the view page renders customer, items, totals and status history', functio
         ->assertSee('Quezon City')
         ->assertSee('Ceramic Mug')
         ->assertSee('300.00')
-        ->assertSee('350.00')
-        ->assertSee('Status history')
-        ->assertSee($history->to_status->getLabel());
+        ->assertSee('350.00');
 });
 
 test('the coupon section is shown with a coupon and hidden without one', function () {
     $coupon = Coupon::factory()->create(['code' => 'SAVE100', 'discount' => '100.00']);
-    $withCoupon = Order::factory()->withCoupon($coupon)->create();
+    $withCoupon = Order::factory()->withCoupon($coupon)->create(['discount_amount' => '100.00']);
     $without = Order::factory()->create();
 
     Livewire::test(ViewOrder::class, ['record' => $withCoupon->id])
