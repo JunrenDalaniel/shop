@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderStatusChanged;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -91,7 +92,11 @@ class Order extends Model implements Commentable
             );
         }
 
+        $previous = $this->status;
+
         $this->update(['status' => $next]);
+
+        OrderStatusChanged::dispatch($this, $previous);
     }
 
     /**
