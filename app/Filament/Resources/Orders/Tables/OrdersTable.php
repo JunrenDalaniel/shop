@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
+use App\Filament\Resources\Orders\Actions\OrderTransitionActions;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -43,6 +45,8 @@ class OrdersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                ActionGroup::make(OrderTransitionActions::make())
+                    ->label('Status'),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

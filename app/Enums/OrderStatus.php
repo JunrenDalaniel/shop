@@ -34,4 +34,22 @@ enum OrderStatus: string implements HasColor, HasLabel
             self::Cancelled => 'danger',
         };
     }
+
+    /**
+     * @return list<self>
+     */
+    public function allowedNext(): array
+    {
+        return match ($this) {
+            self::Pending => [self::Paid, self::Cancelled],
+            self::Paid => [self::Shipped, self::Cancelled],
+            self::Shipped => [self::Delivered],
+            self::Delivered, self::Cancelled => [],
+        };
+    }
+
+    public function canMoveTo(self $next): bool
+    {
+        return in_array($next, $this->allowedNext(), true);
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -35,7 +36,6 @@ test('an order can be created with items, snapshots and totals', function () {
     Livewire::test(CreateOrder::class)
         ->fillForm([
             'user_id' => $customer->id,
-            'status' => OrderStatus::Paid->value,
             'items' => [
                 ['product_id' => $product->id, 'quantity' => 3, 'price' => 100],
             ],
@@ -45,7 +45,7 @@ test('an order can be created with items, snapshots and totals', function () {
 
     $order = Order::where('user_id', $customer->id)->firstOrFail();
 
-    expect($order->status)->toBe(OrderStatus::Paid)
+    expect($order->fresh()->status)->toBe(OrderStatus::Pending)
         ->and($order->items)->toHaveCount(1)
         ->and($order->items->first()->product_name)->toBe('Mug')
         ->and((float) $order->items->first()->line_total)->toBe(300.0)
@@ -53,14 +53,14 @@ test('an order can be created with items, snapshots and totals', function () {
         ->and((float) $order->total)->toBe(300.0);
 });
 
-test('order validation requires a customer, status and at least one item', function () {
+test('order validation requires a customer and at least one item', function () {
     Livewire::test(CreateOrder::class)
-        ->fillForm(['user_id' => null, 'status' => null, 'items' => []])
+        ->fillForm(['user_id' => null, 'items' => []])
         ->call('create')
-        ->assertHasFormErrors(['user_id' => 'required', 'status' => 'required', 'items']);
+        ->assertHasFormErrors(['user_id' => 'required', 'items']);
 });
 
-test('editing an order recalculates its total', function () {
+test('editing an order recalculates its total and cannot change its status', function () {
     $order = Order::factory()->create(['shipping_fee' => 50]);
     $item = OrderItem::factory()->for($order)->create(['quantity' => 1, 'price' => 100, 'line_total' => 100]);
 
@@ -76,9 +76,16 @@ test('editing an order recalculates its total', function () {
 
     $order->refresh();
 
-    expect($order->status)->toBe(OrderStatus::Delivered)
+    expect($order->status)->toBe(OrderStatus::Pending)
         ->and((float) $order->subtotal)->toBe(200.0)
         ->and((float) $order->total)->toBe(250.0);
+});
+
+test('the status field is read-only on the order form', function () {
+    $order = Order::factory()->create();
+
+    Livewire::test(EditOrder::class, ['record' => $order->id])
+        ->assertFormFieldIsDisabled('status');
 });
 
 test('an order view page shows its details and the comments thread', function () {
@@ -88,4 +95,39 @@ test('an order view page shows its details and the comments thread', function ()
         ->assertOk()
         ->assertSee($order->order_number)
         ->assertSee('Comments');
+});
+
+test('a transition action moves the order after confirmation', function () {
+    $order = Order::factory()->create(['status' => OrderStatus::Pending]);
+
+    Livewire::test(ListOrders::class)
+        ->callAction(TestAction::make('markPaid')->table($order))
+        ->assertNotified();
+
+    expect($order->fresh()->status)->toBe(OrderStatus::Paid);
+});
+
+test('transition actions are only visible when the move is allowed', function () {
+    $pending = Order::factory()->create(['status' => OrderStatus::Pending]);
+    $delivered = Order::factory()->create(['status' => OrderStatus::Delivered]);
+
+    Livewire::test(ListOrders::class)
+        ->assertActionVisible(TestAction::make('markPaid')->table($pending))
+        ->assertActionVisible(TestAction::make('cancel')->table($pending))
+        ->assertActionHidden(TestAction::make('ship')->table($pending))
+        ->assertActionHidden(TestAction::make('markDelivered')->table($pending))
+        ->assertActionHidden(TestAction::make('markPaid')->table($delivered))
+        ->assertActionHidden(TestAction::make('cancel')->table($delivered));
+});
+
+test('the order view page offers the allowed transitions', function () {
+    $order = Order::factory()->create(['status' => OrderStatus::Shipped]);
+
+    Livewire::test(ViewOrder::class, ['record' => $order->id])
+        ->assertActionVisible('markDelivered')
+        ->assertActionHidden('markPaid')
+        ->callAction('markDelivered')
+        ->assertNotified();
+
+    expect($order->fresh()->status)->toBe(OrderStatus::Delivered);
 });

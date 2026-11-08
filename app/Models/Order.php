@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use InvalidArgumentException;
 use Tilto\Commentable\Contracts\Commentable;
 use Tilto\Commentable\Traits\HasComments;
 
@@ -75,6 +76,22 @@ class Order extends Model implements Commentable
         return $this->belongsToMany(Product::class, 'order_items')
             ->withPivot(['product_name', 'quantity', 'price', 'line_total'])
             ->withTimestamps();
+    }
+
+    /**
+     * Move the order to the given status, refusing transitions the current status does not allow.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function moveTo(OrderStatus $next): void
+    {
+        if (! $this->status->canMoveTo($next)) {
+            throw new InvalidArgumentException(
+                "Cannot move order from {$this->status->value} to {$next->value}."
+            );
+        }
+
+        $this->update(['status' => $next]);
     }
 
     /**
