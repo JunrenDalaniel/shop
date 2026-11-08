@@ -104,6 +104,13 @@ class DatabaseSeeder extends Seeder
             'created_at' => $placedAt,
         ]);
 
+        $order->statusHistories()->create([
+            'from_status' => null,
+            'to_status' => $order->status,
+            'changed_by' => null,
+            'created_at' => $placedAt,
+        ]);
+
         $totalInCents = 0;
 
         foreach ($products as $product) {

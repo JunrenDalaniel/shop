@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Tilto\Commentable\Contracts\Commentable;
 use Tilto\Commentable\Traits\HasComments;
@@ -72,6 +73,11 @@ class Order extends Model implements Commentable
         return $this->hasMany(Shipment::class);
     }
 
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class)->latest()->latest('id');
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'order_items')
@@ -81,10 +87,11 @@ class Order extends Model implements Commentable
 
     /**
      * Move the order to the given status, refusing transitions the current status does not allow.
+     * The change is recorded in the status history, attributed to $by or the authenticated user.
      *
      * @throws InvalidArgumentException
      */
-    public function moveTo(OrderStatus $next): void
+    public function moveTo(OrderStatus $next, ?User $by = null): void
     {
         if (! $this->status->canMoveTo($next)) {
             throw new InvalidArgumentException(
@@ -93,8 +100,17 @@ class Order extends Model implements Commentable
         }
 
         $previous = $this->status;
+        $changedBy = $by ?? auth()->user();
 
-        $this->update(['status' => $next]);
+        DB::transaction(function () use ($next, $previous, $changedBy): void {
+            $this->update(['status' => $next]);
+
+            $this->statusHistories()->create([
+                'from_status' => $previous,
+                'to_status' => $next,
+                'changed_by' => $changedBy?->getKey(),
+            ]);
+        });
 
         OrderStatusChanged::dispatch($this, $previous);
     }
