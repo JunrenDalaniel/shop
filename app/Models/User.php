@@ -66,6 +66,16 @@ class User extends Authenticatable implements Commenter, FilamentUser, MustVerif
             : $initials;
     }
 
+    public function canImpersonate(): bool
+    {
+        return $this->hasRole(config('filament-shield.super_admin.name'));
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return ! $this->hasRole(config('filament-shield.super_admin.name'));
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

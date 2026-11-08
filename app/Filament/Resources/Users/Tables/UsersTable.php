@@ -13,6 +13,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
 {
@@ -46,6 +47,7 @@ class UsersTable
                     ->preload(),
             ])
             ->recordActions([
+                Impersonate::make(),
                 ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make()

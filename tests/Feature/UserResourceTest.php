@@ -127,3 +127,27 @@ test('bulk delete skips the signed in admin', function () {
     expect(User::whereIn('id', $others->pluck('id'))->count())->toBe(0)
         ->and(User::find($this->admin->getKey()))->not->toBeNull();
 });
+
+test('super admin can impersonate a regular user', function () {
+    $user = User::factory()->create();
+
+    Livewire::test(ListUsers::class)
+        ->assertTableActionVisible('impersonate', $user)
+        ->callTableAction('impersonate', $user);
+
+    expect(auth()->id())->toBe($user->getKey());
+});
+
+test('super admins cannot be impersonated', function () {
+    $otherAdmin = User::factory()->superAdmin()->create();
+
+    Livewire::test(ListUsers::class)
+        ->assertTableActionHidden('impersonate', $otherAdmin);
+});
+
+test('users without the super admin role cannot impersonate', function () {
+    $target = User::factory()->create();
+
+    expect(User::factory()->create()->canImpersonate())->toBeFalse()
+        ->and($target->canBeImpersonated())->toBeTrue();
+});
