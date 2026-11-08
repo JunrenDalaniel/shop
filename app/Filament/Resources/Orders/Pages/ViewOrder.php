@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Filament\Resources\Orders\Actions\OrderCouponActions;
 use App\Filament\Resources\Orders\Actions\OrderTransitionActions;
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Actions\EditAction;
@@ -15,6 +16,7 @@ class ViewOrder extends ViewRecord
     {
         return [
             ...OrderTransitionActions::make(),
+            ...OrderCouponActions::make(),
             EditAction::make(),
         ];
     }
