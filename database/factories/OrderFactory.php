@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\OrderStatus;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -33,5 +34,22 @@ class OrderFactory extends Factory
             'shipping_postal_code' => fake()->postcode(),
             'shipping_country' => fake()->countryCode(),
         ];
+    }
+
+    public function paid(): static
+    {
+        return $this->state(fn () => [
+            'status' => OrderStatus::Paid,
+            'paid_at' => now(),
+            'stock_deducted_at' => now(),
+        ]);
+    }
+
+    public function withCoupon(Coupon $coupon): static
+    {
+        return $this->state(fn () => [
+            'coupon_id' => $coupon->getKey(),
+            'coupon_code' => $coupon->code,
+        ]);
     }
 }
