@@ -1,65 +1,74 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\Supplier;
-use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class SupplierPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+
+    public function viewAny(AuthUser $authUser): bool
     {
-        return true;
+        return $authUser->can('ViewAny:Supplier');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Supplier $supplier): bool
+    public function view(AuthUser $authUser, Supplier $supplier): bool
     {
-        return true;
+        return $authUser->can('View:Supplier');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return true;
+        return $authUser->can('Create:Supplier');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Supplier $supplier): bool
+    public function update(AuthUser $authUser, Supplier $supplier): bool
     {
-        return true;
+        return $authUser->can('Update:Supplier');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Supplier $supplier): bool
+    public function delete(AuthUser $authUser, Supplier $supplier): bool
     {
-        return true;
+        return $authUser->can('Delete:Supplier');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Supplier $supplier): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return true;
+        return $authUser->can('DeleteAny:Supplier');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Supplier $supplier): bool
+    public function restore(AuthUser $authUser, Supplier $supplier): bool
     {
-        return true;
+        return $authUser->can('Restore:Supplier');
+    }
+
+    public function forceDelete(AuthUser $authUser, Supplier $supplier): bool
+    {
+        return $authUser->can('ForceDelete:Supplier');
+    }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Supplier');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Supplier');
+    }
+
+    public function replicate(AuthUser $authUser, Supplier $supplier): bool
+    {
+        return $authUser->can('Replicate:Supplier');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Supplier');
     }
 }

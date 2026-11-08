@@ -13,7 +13,7 @@ use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->superAdmin()->create());
 });
 
 test('orders are listed and can be filtered by status', function () {

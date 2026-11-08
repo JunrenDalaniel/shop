@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -44,6 +45,14 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the user has the Shield super admin role.
+     */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole(Role::findOrCreate('super_admin')));
     }
 
     /**

@@ -11,7 +11,7 @@ use Filament\Actions\DeleteAction;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->superAdmin()->create());
 });
 
 test('categories are listed with their product counts', function () {
